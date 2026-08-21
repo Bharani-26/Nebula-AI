@@ -1,0 +1,69 @@
+import { GoogleGenAI } from "@google/genai";
+
+export interface GeminiMessageInput {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export const SYSTEM_PERSONA =
+  "Nebula AI, a sleek and ultra-intelligent cosmic assistant";
+
+export async function streamGeminiChat(
+  history: GeminiMessageInput[],
+  userPrompt: string,
+  onChunk: (chunkText: string) => void
+): Promise<string> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (!apiKey || typeof apiKey !== "string" || apiKey.trim() === "") {
+    throw new Error(
+      "API Key missing. Please define VITE_GEMINI_API_KEY in your .env.local file to communicate with Nebula AI."
+    );
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  // Format message history for Gemini SDK
+  const contents = [
+    ...history.map((m) => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.content }],
+    })),
+    {
+      role: "user",
+      parts: [{ text: userPrompt }],
+    },
+  ];
+
+  try {
+    const responseStream = await ai.models.generateContentStream({
+      model: "gemini-3.6-flash",
+      contents,
+      config: {
+        systemInstruction: SYSTEM_PERSONA,
+      },
+    });
+
+    let fullText = "";
+    for await (const chunk of responseStream) {
+      if (chunk.text) {
+        fullText += chunk.text;
+        onChunk(chunk.text);
+      }
+    }
+
+    return fullText;
+  } catch (error: any) {
+    let cleanMessage = error?.message || "Failed to communicate with Gemini.";
+    try {
+      const parsed = JSON.parse(cleanMessage);
+      if (parsed?.error?.message) {
+        cleanMessage = parsed.error.message;
+      }
+    } catch (_) {
+      // not JSON string, keep cleanMessage as is
+    }
+    throw new Error(cleanMessage);
+  }
+}
+
