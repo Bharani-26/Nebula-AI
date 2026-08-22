@@ -82,24 +82,27 @@ export function useChatStore() {
       });
 
       const assistantId = uid();
-      let initializedAssistantMsg = false;
+      const appendAssistantText = (chunk: string) => {
+        setMessages((prev) => {
+          const hasAssistantMessage = prev.some((message) => message.id === assistantId);
+          if (!hasAssistantMessage) {
+            return [
+              ...prev,
+              { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
+            ];
+          }
+
+          return prev.map((message) =>
+            message.id === assistantId ? { ...message, content: message.content + chunk } : message,
+          );
+        });
+      };
 
       try {
         if (selectedModel.provider === "gemini") {
           await streamGeminiChat(selectedModel.id, history, content, (chunk) => {
             setIsThinking(false);
-            setMessages((prev) => {
-              if (!initializedAssistantMsg) {
-                initializedAssistantMsg = true;
-                return [
-                  ...prev,
-                  { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
-                ];
-              }
-              return prev.map((msg) =>
-                msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg,
-              );
-            });
+            appendAssistantText(chunk);
           });
         } else if (selectedModel.provider === "openrouter") {
           const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -115,18 +118,7 @@ export function useChatStore() {
             content,
             (chunk) => {
               setIsThinking(false);
-              setMessages((prev) => {
-                if (!initializedAssistantMsg) {
-                  initializedAssistantMsg = true;
-                  return [
-                    ...prev,
-                    { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
-                  ];
-                }
-                return prev.map((msg) =>
-                  msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg,
-                );
-              });
+              appendAssistantText(chunk);
             },
             apiKey,
           );
