@@ -45,7 +45,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="absolute bottom-full left-0 mb-2 w-56 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
+            className="absolute bottom-full left-0 mb-2 w-64 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
           >
             {MODELS.map((model) => (
               <li key={model.id}>
@@ -54,13 +54,19 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
                     onSelectModel(model);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm text-foreground hover:bg-primary/20 ${
-                    model.id === selectedModel.id ? "font-medium" : ""
+                  className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/20 ${
+                    model.id === selectedModel.id ? "bg-primary/10 font-medium" : ""
                   }`}
                 >
                   <span>{model.name}</span>
-                  <span className="ml-2 rounded bg-primary/20 px-1.5 py-0.5 text-xs font-medium text-primary">
-                    {model.badge}
+                  <span
+                    className={`ml-2 rounded px-1.5 py-0.5 text-xs font-medium ${
+                      model.provider === "gemini"
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "bg-green-500/20 text-green-400"
+                    }`}
+                  >
+                    {model.provider === "gemini" ? "Google" : "OpenRouter"}
                   </span>
                 </button>
               </li>
