@@ -6,6 +6,7 @@ import { HeroState } from "./HeroState";
 import { InputBar } from "./InputBar";
 import { MessageFeed } from "./MessageFeed";
 import { ModelSelector } from "./ModelSelector";
+import { NebulaSidebar } from "./NebulaSidebar";
 import { useChatStore } from "@/hooks/useChatStore";
 
 export function NebulaWorkspace() {
