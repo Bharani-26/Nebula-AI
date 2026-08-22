@@ -28,7 +28,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
     <div id="model-selector" className="relative z-50">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center space-x-2 rounded-full bg-neutral-900/80 px-3 py-2 text-sm text-primary-foreground shadow-glow transition-colors hover:bg-neutral-800/80"
+        className="flex items-center space-x-2 rounded-full border border-primary/70 bg-primary/25 px-4 py-2 text-sm font-semibold text-foreground shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-colors hover:bg-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <span>{selectedModel.name}</span>
         <svg
@@ -46,7 +46,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="absolute right-0 mt-2 w-56 space-y-1 rounded-lg bg-neutral-900/95 py-2 shadow-xl backdrop-blur"
+            className="absolute right-0 mt-2 w-56 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
           >
             {MODELS.map((model) => (
               <li key={model.id}>
@@ -55,7 +55,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
                     onSelectModel(model);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-4 py-1 text-left text-sm text-primary-foreground hover:bg-neutral-800/80 ${
+                  className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm text-foreground hover:bg-primary/20 ${
                     model.id === selectedModel.id ? "font-medium" : ""
                   }`}
                 >
