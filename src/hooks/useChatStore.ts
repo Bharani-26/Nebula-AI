@@ -1,7 +1,10 @@
 // src/hooks/useChatStore.ts
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MODELS, type ModelConfig } from "@/config/models";
+import { saveChatToSupabase, fetchChatsFromSupabase } from "@/services/chatStorage";
+import { getUser, onAuthStateChange } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export type ChatRole = "user" | "assistant";
 
@@ -35,6 +38,22 @@ export function useChatStore() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ModelConfig>(MODELS[0]);
+  const [user, setUser] = useState<User | null>(null);
+
+  const messagesRef = useRef(messages);
+  const activeIdRef = useRef(activeId);
+  const userRef = useRef(user);
+  messagesRef.current = messages;
+  activeIdRef.current = activeId;
+  userRef.current = user;
+
+  useEffect(() => {
+    getUser().then((u) => setUser(u));
+    const { data: subscription } = onAuthStateChange((u, _session) => {
+      setUser(u);
+    });
+    return () => subscription.subscription.unsubscribe();
+  }, []);
 
   const isHero = messages.length === 0;
 
@@ -137,10 +156,47 @@ export function useChatStore() {
         ]);
       } finally {
         setIsThinking(false);
+
+        const finalMessages = messagesRef.current;
+        const currentActiveId = activeIdRef.current;
+        const currentUser = userRef.current;
+        if (finalMessages.length > 0 && currentActiveId) {
+          const thread = threads.find((t) => t.id === currentActiveId);
+          if (thread) {
+            saveChatToSupabase(
+              thread.title,
+              finalMessages,
+              selectedModel.id,
+              currentActiveId,
+              currentUser?.id,
+            );
+          }
+        }
       }
     },
-    [activeId, messages, selectedModel],
+    [activeId, messages, selectedModel, threads],
   );
+
+  const loadChats = useCallback(async () => {
+    const records = await fetchChatsFromSupabase(user?.id);
+    if (records.length === 0) return;
+
+    const loadedThreads: ChatThread[] = records.map((record) => ({
+      id: record.id,
+      title: record.title,
+      subtitle: new Date(record.created_at).toLocaleDateString(),
+      messages: record.messages ?? [],
+    }));
+
+    setThreads((prev) => {
+      const existingIds = new Set(prev.map((t) => t.id));
+      const merged = [...prev];
+      for (const thread of loadedThreads) {
+        if (!existingIds.has(thread.id)) merged.push(thread);
+      }
+      return merged;
+    });
+  }, [user]);
 
   const setModel = (model: ModelConfig) => setSelectedModel(model);
 
@@ -151,11 +207,13 @@ export function useChatStore() {
       messages,
       isThinking,
       isHero,
+      user,
       newChat,
       selectThread,
       sendMessage,
       selectedModel,
       setModel,
+      loadChats,
     }),
     [
       threads,
@@ -163,10 +221,12 @@ export function useChatStore() {
       messages,
       isThinking,
       isHero,
+      user,
       newChat,
       selectThread,
       sendMessage,
       selectedModel,
+      loadChats,
     ],
   );
 }

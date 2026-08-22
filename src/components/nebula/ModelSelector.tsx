@@ -12,7 +12,6 @@ interface ModelSelectorProps {
 export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -25,14 +24,14 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
   }, []);
 
   return (
-    <div id="model-selector" className="relative z-50">
+    <div id="model-selector" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center space-x-2 rounded-full border border-primary/70 bg-primary/25 px-4 py-2 text-sm font-semibold text-foreground shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-colors hover:bg-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary sm:text-sm"
       >
         <span>{selectedModel.name}</span>
         <svg
-          className={`h-4 w-4 transform transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transform transition-transform ${open ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="currentColor"
         >
@@ -43,10 +42,10 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
       <AnimatePresence>
         {open && (
           <motion.ul
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute right-0 mt-2 w-56 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
+            exit={{ opacity: 0, y: 8 }}
+            className="absolute bottom-full left-0 mb-2 w-56 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
           >
             {MODELS.map((model) => (
               <li key={model.id}>

@@ -1,12 +1,16 @@
 import { ArrowUp, Mic, Paperclip } from "lucide-react";
 import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { ModelSelector } from "./ModelSelector";
+import type { ModelConfig } from "@/config/models";
 
 interface InputBarProps {
   onSend: (text: string) => void;
   disabled?: boolean;
+  selectedModel: ModelConfig;
+  onSelectModel: (model: ModelConfig) => void;
 }
 
-export function InputBar({ onSend, disabled }: InputBarProps) {
+export function InputBar({ onSend, disabled, selectedModel, onSelectModel }: InputBarProps) {
   const [value, setValue] = useState("");
 
   const submit = (e?: FormEvent) => {
@@ -37,6 +41,7 @@ export function InputBar({ onSend, disabled }: InputBarProps) {
         >
           <Paperclip className="h-4.5 w-4.5" />
         </button>
+        <ModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
