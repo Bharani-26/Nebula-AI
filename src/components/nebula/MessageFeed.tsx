@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import mark from "@/assets/nebula-mark.png";
 import type { ChatMessage } from "@/hooks/useChatStore";
@@ -17,6 +17,88 @@ function StarlightAvatar() {
     >
       <img src={mark} alt="" aria-hidden="true" width={28} height={28} className="h-7 w-7" />
     </span>
+  );
+}
+
+function formatInline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={index}
+          className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[0.85em] text-accent"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={index}>{part.slice(1, -1)}</em>;
+    }
+
+    return part;
+  });
+}
+
+function AssistantMessage({ content }: { content: string }) {
+  const lines = content
+    .replace(/\\([*_#`])/g, "$1")
+    .replace(/\s*---\s*(?=#{1,3}\s)/g, "\n\n")
+    .split(/\r?\n/);
+
+  return (
+    <div className="max-w-[85%] space-y-3 pt-1 text-sm leading-relaxed text-foreground">
+      {lines.map((line, index) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={index} className="h-1" aria-hidden="true" />;
+
+        const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+          const level = heading[1].length;
+          return (
+            <h3
+              key={index}
+              className={
+                level === 1
+                  ? "font-display text-xl font-semibold"
+                  : level === 2
+                    ? "font-display text-lg font-semibold"
+                    : "font-display text-base font-semibold text-accent"
+              }
+            >
+              {formatInline(heading[2])}
+            </h3>
+          );
+        }
+
+        const unordered = trimmed.match(/^[-*+]\s+(.+)$/);
+        if (unordered) {
+          return (
+            <div key={index} className="flex gap-2 pl-1">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <span>{formatInline(unordered[1])}</span>
+            </div>
+          );
+        }
+
+        const ordered = trimmed.match(/^(\d+)\.\s+(.+)$/);
+        if (ordered) {
+          return (
+            <div key={index} className="flex gap-2 pl-1">
+              <span className="min-w-5 font-medium text-accent">{ordered[1]}.</span>
+              <span>{formatInline(ordered[2])}</span>
+            </div>
+          );
+        }
+
+        return <p key={index}>{formatInline(trimmed)}</p>;
+      })}
+    </div>
   );
 }
 
@@ -57,9 +139,7 @@ export function MessageFeed({ messages, isThinking }: MessageFeedProps) {
               className="flex gap-4"
             >
               <StarlightAvatar />
-              <p className="max-w-[85%] pt-1 text-sm leading-relaxed text-foreground">
-                {m.content}
-              </p>
+              <AssistantMessage content={m.content} />
             </motion.div>
           ),
         )}
