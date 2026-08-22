@@ -80,7 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Nebula AI" },
       { name: "description", content: "A space-themed AI chat experience for curious explorers." },
       { property: "og:title", content: "Nebula AI" },
-      { property: "og:description", content: "A space-themed AI chat experience for curious explorers." },
+      {
+        property: "og:description",
+        content: "A space-themed AI chat experience for curious explorers.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

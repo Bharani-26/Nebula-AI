@@ -86,42 +86,65 @@ export function useChatStore() {
 
       try {
         if (selectedModel.provider === "gemini") {
-          await streamGeminiChat(history, content, (chunk) => {
+          await streamGeminiChat(selectedModel.id, history, content, (chunk) => {
             setIsThinking(false);
             setMessages((prev) => {
               if (!initializedAssistantMsg) {
                 initializedAssistantMsg = true;
-                return [...prev, { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() }];
+                return [
+                  ...prev,
+                  { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
+                ];
               }
-              return prev.map((msg) => (msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg));
+              return prev.map((msg) =>
+                msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg,
+              );
             });
           });
         } else if (selectedModel.provider === "openrouter") {
           const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
           if (!apiKey) throw new Error("OpenRouter API key missing in VITE_OPENROUTER_API_KEY");
           // prepend system persona for OpenRouter
-          const extendedHistory = [{ role: "assistant" as const, content: SYSTEM_PERSONA }, ...history];
-          await streamOpenRouterChat(selectedModel.id, extendedHistory, content, (chunk) => {
-            setIsThinking(false);
-            setMessages((prev) => {
-              if (!initializedAssistantMsg) {
-                initializedAssistantMsg = true;
-                return [...prev, { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() }];
-              }
-              return prev.map((msg) => (msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg));
-            });
-          }, apiKey);
+          const extendedHistory = [
+            { role: "assistant" as const, content: SYSTEM_PERSONA },
+            ...history,
+          ];
+          await streamOpenRouterChat(
+            selectedModel.id,
+            extendedHistory,
+            content,
+            (chunk) => {
+              setIsThinking(false);
+              setMessages((prev) => {
+                if (!initializedAssistantMsg) {
+                  initializedAssistantMsg = true;
+                  return [
+                    ...prev,
+                    { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
+                  ];
+                }
+                return prev.map((msg) =>
+                  msg.id === assistantId ? { ...msg, content: msg.content + chunk } : msg,
+                );
+              });
+            },
+            apiKey,
+          );
         }
-      } catch (error: any) {
-        setIsThinking(false);
-        const errMsg = error?.message || "An unexpected error occurred while communicating with the LLM.";
+      } catch (error: unknown) {
+        const errMsg =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred while communicating with the LLM.";
         setMessages((prev) => [
           ...prev,
           { id: uid(), role: "assistant", content: `⚠️ ${errMsg}`, createdAt: Date.now() },
         ]);
+      } finally {
+        setIsThinking(false);
       }
     },
-    [activeId, messages, selectedModel]
+    [activeId, messages, selectedModel],
   );
 
   const setModel = (model: ModelConfig) => setSelectedModel(model);
@@ -139,6 +162,16 @@ export function useChatStore() {
       selectedModel,
       setModel,
     }),
-    [threads, activeId, messages, isThinking, isHero, newChat, selectThread, sendMessage, selectedModel]
+    [
+      threads,
+      activeId,
+      messages,
+      isThinking,
+      isHero,
+      newChat,
+      selectThread,
+      sendMessage,
+      selectedModel,
+    ],
   );
 }

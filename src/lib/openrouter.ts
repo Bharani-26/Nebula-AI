@@ -10,7 +10,7 @@ export async function streamOpenRouterChat(
   history: OpenRouterMessage[],
   userPrompt: string,
   onChunk: (chunkText: string) => void,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const payload = {
     model: modelId,

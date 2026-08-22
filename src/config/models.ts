@@ -9,28 +9,10 @@ export interface ModelConfig {
 
 export const MODELS: ModelConfig[] = [
   {
-    id: "gemini-2.5-flash",
+    id: "gemini-3.6-flash",
     provider: "gemini",
-    name: "Nebula Flash",
-    badge: "Fastest",
-  },
-  {
-    id: "deepseek/deepseek-r1",
-    provider: "openrouter",
-    name: "Nebula DeepSeek R1",
-    badge: "Reasoning",
-  },
-  {
-    id: "anthropic/claude-3.5-sonnet",
-    provider: "openrouter",
-    name: "Nebula Claude 3.5",
-    badge: "Coding",
-  },
-  {
-    id: "meta-llama/llama-3.3-70b-instruct",
-    provider: "openrouter",
-    name: "Nebula Llama 3.3",
-    badge: "Open Source",
+    name: "Gemini",
+    badge: "Connected",
   },
 ];
 

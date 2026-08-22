@@ -24,7 +24,7 @@ export function InputBar({ onSend, disabled }: InputBarProps) {
   };
 
   return (
-    <div className="px-4 pb-6">
+    <div className="px-3 pb-4 sm:px-4 sm:pb-6">
       <form
         onSubmit={submit}
         className="glass-panel mx-auto flex w-full max-w-3xl items-end gap-2 rounded-[28px] p-2.5"
@@ -33,7 +33,7 @@ export function InputBar({ onSend, disabled }: InputBarProps) {
         <button
           type="button"
           aria-label="Attach a file"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="hidden h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:grid"
         >
           <Paperclip className="h-4.5 w-4.5" />
         </button>
@@ -48,7 +48,7 @@ export function InputBar({ onSend, disabled }: InputBarProps) {
         <button
           type="button"
           aria-label="Voice input"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="hidden h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:grid"
         >
           <Mic className="h-4.5 w-4.5" />
         </button>

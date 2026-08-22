@@ -5,19 +5,19 @@ export interface GeminiMessageInput {
   content: string;
 }
 
-export const SYSTEM_PERSONA =
-  "Nebula AI, a sleek and ultra-intelligent cosmic assistant";
+export const SYSTEM_PERSONA = "Nebula AI, a sleek and ultra-intelligent cosmic assistant";
 
 export async function streamGeminiChat(
+  modelId: string,
   history: GeminiMessageInput[],
   userPrompt: string,
-  onChunk: (chunkText: string) => void
+  onChunk: (chunkText: string) => void,
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!apiKey || typeof apiKey !== "string" || apiKey.trim() === "") {
     throw new Error(
-      "API Key missing. Please define VITE_GEMINI_API_KEY in your .env.local file to communicate with Nebula AI."
+      "API Key missing. Please define VITE_GEMINI_API_KEY in your .env.local file to communicate with Nebula AI.",
     );
   }
 
@@ -37,7 +37,7 @@ export async function streamGeminiChat(
 
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: "gemini-3.6-flash",
+      model: modelId,
       contents,
       config: {
         systemInstruction: SYSTEM_PERSONA,
@@ -52,9 +52,14 @@ export async function streamGeminiChat(
       }
     }
 
+    if (!fullText.trim()) {
+      throw new Error("Gemini returned an empty response. Please try again.");
+    }
+
     return fullText;
-  } catch (error: any) {
-    let cleanMessage = error?.message || "Failed to communicate with Gemini.";
+  } catch (error: unknown) {
+    let cleanMessage =
+      error instanceof Error ? error.message : "Failed to communicate with Gemini.";
     try {
       const parsed = JSON.parse(cleanMessage);
       if (parsed?.error?.message) {
@@ -66,4 +71,3 @@ export async function streamGeminiChat(
     throw new Error(cleanMessage);
   }
 }
-
