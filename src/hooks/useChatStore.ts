@@ -1,8 +1,6 @@
 // src/hooks/useChatStore.ts
 
 import { useCallback, useMemo, useState } from "react";
-import { streamGeminiChat, SYSTEM_PERSONA } from "@/lib/gemini";
-import { streamOpenRouterChat } from "@/lib/openrouter";
 import { MODELS, type ModelConfig } from "@/config/models";
 
 export type ChatRole = "user" | "assistant";
@@ -100,6 +98,7 @@ export function useChatStore() {
 
       try {
         if (selectedModel.provider === "gemini") {
+          const { streamGeminiChat } = await import("@/lib/gemini");
           await streamGeminiChat(selectedModel.id, history, content, (chunk) => {
             setIsThinking(false);
             appendAssistantText(chunk);
@@ -107,6 +106,10 @@ export function useChatStore() {
         } else if (selectedModel.provider === "openrouter") {
           const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
           if (!apiKey) throw new Error("OpenRouter API key missing in VITE_OPENROUTER_API_KEY");
+          const [{ SYSTEM_PERSONA }, { streamOpenRouterChat }] = await Promise.all([
+            import("@/lib/gemini"),
+            import("@/lib/openrouter"),
+          ]);
           // prepend system persona for OpenRouter
           const extendedHistory = [
             { role: "assistant" as const, content: SYSTEM_PERSONA },

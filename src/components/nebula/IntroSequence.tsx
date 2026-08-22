@@ -50,7 +50,7 @@ export function IntroSequence({ onEnter }: IntroSequenceProps) {
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0" style={{ background: "var(--gradient-veil)" }} />
-      <StarField count={120} />
+      <StarField count={48} />
 
       <motion.div
         animate={{ opacity: warping ? 0 : 1, filter: warping ? "blur(14px)" : "blur(0px)" }}
