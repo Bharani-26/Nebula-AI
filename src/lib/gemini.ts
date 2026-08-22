@@ -36,7 +36,7 @@ export async function streamGeminiChat(
   ];
 
   try {
-    const responseStream = await ai.models.generateContentStream({
+    const response = await ai.models.generateContent({
       model: modelId,
       contents,
       config: {
@@ -44,18 +44,13 @@ export async function streamGeminiChat(
       },
     });
 
-    let fullText = "";
-    for await (const chunk of responseStream) {
-      if (chunk.text) {
-        fullText += chunk.text;
-        onChunk(chunk.text);
-      }
-    }
+    const fullText = response.text ?? "";
 
     if (!fullText.trim()) {
       throw new Error("Gemini returned an empty response. Please try again.");
     }
 
+    onChunk(fullText);
     return fullText;
   } catch (error: unknown) {
     let cleanMessage =
