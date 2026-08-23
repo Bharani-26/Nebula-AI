@@ -15,6 +15,18 @@ export const MODELS: ModelConfig[] = [
     badge: "Google",
   },
   {
+    id: "deepseek/deepseek-r1",
+    provider: "openrouter",
+    name: "DeepSeek R1",
+    badge: "OpenRouter",
+  },
+  {
+    id: "anthropic/claude-sonnet-4.5",
+    provider: "openrouter",
+    name: "Claude Sonnet 4.5",
+    badge: "OpenRouter",
+  },
+  {
     id: "google/gemma-4-31b-it:free",
     provider: "openrouter",
     name: "Gemma 4 31B",
@@ -24,18 +36,6 @@ export const MODELS: ModelConfig[] = [
     id: "z-ai/glm-5.2:free",
     provider: "openrouter",
     name: "GLM 5.2",
-    badge: "OpenRouter",
-  },
-  {
-    id: "nvidia/nemotron-3.5-lightning:free",
-    provider: "openrouter",
-    name: "Nemotron Lightning",
-    badge: "OpenRouter",
-  },
-  {
-    id: "nvidia/nemotron-3-super-120b-a12b:free",
-    provider: "openrouter",
-    name: "Nemotron 3 Super",
     badge: "OpenRouter",
   },
 ];
