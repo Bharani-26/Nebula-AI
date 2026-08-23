@@ -27,9 +27,9 @@ export const MODELS: ModelConfig[] = [
     badge: "OpenRouter",
   },
   {
-    id: "google/gemma-4-31b-it:free",
+    id: "nvidia/nemotron-3-nano-30b-a3b:free",
     provider: "openrouter",
-    name: "Gemma 4 31B",
+    name: "Nemotron 3 Nano",
     badge: "OpenRouter",
   },
   {
