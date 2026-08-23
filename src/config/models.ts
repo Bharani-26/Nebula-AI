@@ -9,9 +9,9 @@ export interface ModelConfig {
 
 export const MODELS: ModelConfig[] = [
   {
-    id: "gemini-2.5-flash",
+    id: "gemini-3.6-flash",
     provider: "gemini",
-    name: "Gemini 2.5 Flash",
+    name: "Gemini 3.6 Flash",
     badge: "Google",
   },
   {
