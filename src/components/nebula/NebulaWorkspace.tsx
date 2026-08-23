@@ -54,7 +54,6 @@ export function NebulaWorkspace() {
           disabled={chat.isThinking}
           selectedModel={chat.selectedModel}
           onSelectModel={chat.setModel}
-          showSuggestions={chat.isHero}
         />
       </main>
     </motion.div>

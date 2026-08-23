@@ -1,6 +1,5 @@
 import { ArrowUp, Mic, Paperclip } from "lucide-react";
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ModelSelector } from "./ModelSelector";
 import type { ModelConfig } from "@/config/models";
 
@@ -9,22 +8,9 @@ interface InputBarProps {
   disabled?: boolean;
   selectedModel: ModelConfig;
   onSelectModel: (model: ModelConfig) => void;
-  showSuggestions?: boolean;
 }
 
-const QUICK_PROMPTS = [
-  { label: "Help me code", prompt: "Help me write a function that " },
-  { label: "Summarize text", prompt: "Summarize the following text for me: " },
-  { label: "Brainstorm ideas", prompt: "Help me brainstorm ideas for " },
-];
-
-export function InputBar({
-  onSend,
-  disabled,
-  selectedModel,
-  onSelectModel,
-  showSuggestions = false,
-}: InputBarProps) {
+export function InputBar({ onSend, disabled, selectedModel, onSelectModel }: InputBarProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -57,35 +43,8 @@ export function InputBar({
     adjustHeight();
   };
 
-  const fillPrompt = (prompt: string) => {
-    setValue(prompt);
-    textareaRef.current?.focus();
-    requestAnimationFrame(adjustHeight);
-  };
-
   return (
     <div className="px-3 pb-4 sm:px-4 sm:pb-6">
-      <AnimatePresence>
-        {showSuggestions && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="mx-auto mb-3 flex max-w-3xl flex-wrap justify-center gap-2"
-          >
-            {QUICK_PROMPTS.map((chip) => (
-              <button
-                key={chip.label}
-                onClick={() => fillPrompt(chip.prompt)}
-                className="rounded-full border border-border bg-secondary/60 px-4 py-2 text-xs font-medium text-foreground transition-all hover:border-purple-500/50 hover:bg-purple-500/10 hover:shadow-[0_0_12px_rgba(168,85,247,0.15)]"
-              >
-                {chip.label}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <form
         onSubmit={submit}
         className="glass-panel mx-auto flex w-full max-w-3xl items-end gap-2 rounded-[28px] p-2.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.15)]"
