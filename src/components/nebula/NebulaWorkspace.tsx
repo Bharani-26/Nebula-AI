@@ -44,7 +44,7 @@ export function NebulaWorkspace() {
         </header>
 
         {chat.isHero ? (
-          <HeroState onPick={chat.sendMessage} />
+          <HeroState onPick={chat.sendMessage} user={chat.user} />
         ) : (
           <MessageFeed messages={chat.messages} isThinking={chat.isThinking} />
         )}
