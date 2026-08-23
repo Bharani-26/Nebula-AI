@@ -33,9 +33,9 @@ export const MODELS: ModelConfig[] = [
     badge: "OpenRouter",
   },
   {
-    id: "z-ai/glm-5.2:free",
+    id: "nvidia/nemotron-3.5-lightning:free",
     provider: "openrouter",
-    name: "GLM 5.2",
+    name: "Nemotron Lightning",
     badge: "OpenRouter",
   },
 ];
