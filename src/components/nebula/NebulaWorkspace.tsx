@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import { AuthButton } from "@/components/AuthButton";
 import { CosmicBackground } from "./CosmicBackground";
@@ -54,9 +54,9 @@ export function NebulaWorkspace() {
             <button
               onClick={() => setSidebarOpen((v) => !v)}
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-lg p-2 text-muted-foreground transition-all duration-300 ease-in-out hover:scale-110 hover:text-purple-400 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)]"
             >
-              <Menu className="h-5 w-5" />
+              <Sparkles className="h-5 w-5" />
             </button>
             <h2 className="font-display text-sm tracking-[0.28em] text-muted-foreground uppercase">
               Nebula AI
