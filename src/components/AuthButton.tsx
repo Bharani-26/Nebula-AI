@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signInWithGoogle, signOut } from "@/lib/supabase";
+import { motion, AnimatePresence } from "framer-motion";
 import type { User } from "@supabase/supabase-js";
 
 interface AuthButtonProps {
@@ -9,6 +10,18 @@ interface AuthButtonProps {
 
 export function AuthButton({ user }: AuthButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!user) {
     return (
@@ -45,24 +58,55 @@ export function AuthButton({ user }: AuthButtonProps) {
 
   const displayName = user.user_metadata?.["full_name"] || user.email || "User";
   const avatarUrl = user.user_metadata?.["avatar_url"];
+  const email = user.email || "";
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <Avatar className="h-8 w-8">
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setDropdownOpen((v) => !v)}
+        className="rounded-full p-0.5 transition-all duration-300 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)] focus:shadow-[0_0_12px_rgba(168,85,247,0.4)] focus:outline-none"
+      >
+        <Avatar className="h-9 w-9 ring-2 ring-purple-500/50 ring-offset-2 ring-offset-background">
           <AvatarImage src={avatarUrl} alt={displayName} />
-          <AvatarFallback className="text-xs">
+          <AvatarFallback className="bg-purple-500/20 text-xs font-medium text-purple-300">
             {displayName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className="hidden text-sm text-foreground sm:inline">{displayName}</span>
-      </div>
-      <button
-        onClick={() => signOut()}
-        className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-primary/20 hover:text-foreground"
-      >
-        Sign Out
       </button>
+
+      <AnimatePresence>
+        {dropdownOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-3 w-64 rounded-xl border border-border bg-cosmos/95 p-4 shadow-xl backdrop-blur"
+          >
+            <div className="flex items-center gap-3 border-b border-border pb-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={avatarUrl} alt={displayName} />
+                <AvatarFallback className="bg-purple-500/20 text-sm font-medium text-purple-300">
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+                <p className="truncate text-xs text-muted-foreground">{email}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setDropdownOpen(false);
+                signOut();
+              }}
+              className="mt-3 w-full rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
+            >
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
