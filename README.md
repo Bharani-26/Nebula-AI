@@ -1,58 +1,48 @@
-# Nebula's Gateway
+Nebula AI — Full-Stack Conversational & RAG Knowledge Engine
+Nebula AI is a full-stack, enterprise-grade AI platform featuring real-time token streaming, multi-model support, and an end-to-end Retrieval-Augmented Generation (RAG) knowledge engine. Designed with a sleek, space-themed dark UI inspired by Google Gemini, it resolves traditional LLM limitations like hallucinations and knowledge cutoffs by grounding responses directly in custom user documents.
 
-Build a standalone, visual-first space-themed web application for "Nebula AI" using React, Tailwind CSS, and Framer Motion. Focus purely on UI/UX, layouts, and animations using mock data for now.
+Key Features
+Real-Time Token Streaming: Fluid, low-latency multi-turn chat experience using Gemini 2.5 and 3.6 Flash streaming models.
 
-### 1. Slow Cinematic 7-Second Intro
+RAG Knowledge Base Engine: High-dimensional vector search using Google's text-embedding-004 embedding model paired with Supabase pgvector Cosine Similarity calculations.
 
-- Start with a full-screen, slow-motion space video or ultra-smooth particle cosmos animation with a gentle zoom-in (Ken Burns effect).
+Interactive Source Citations: Generates grounded answers with clickable source pills pointing back to retrieved vector chunks.
 
-- Title overlay: "NEBULA AI" revealing slowly with a soft cosmic ambient glow.
+Secure Google OAuth & User Isolation: Built-in authentication powered by Supabase Auth with Row Level Security policies ensuring private document vectors and chat threads remain completely isolated per user.
 
-- The 7-second countdown should feel dramatic and deliberate, accompanied by a subtle progress bar at the bottom and a small "Skip Intro" button.
+Multi-Model Routing: Supports dynamic model switching and routing across Google GenAI models and OpenRouter endpoints.
 
-- At the 7-second mark, smoothly fade in a glowing primary action button: "**ACCESS THE NEBULA AI**".
+Responsive Cosmic UI: Dark space-themed UI featuring custom glow effects, responsive prompt bar layouts, and clean flex alignment.
 
-- Clicking the button triggers a slow 1.5-second portal-style warp/fade transition into the main interface.
+Tech Stack
+Frontend: React 18, TypeScript, Tailwind CSS, Lucide React, Zustand
 
-### 2. Auto-Rotating Cosmic Background
+AI & Embedding Models: Google Gemini API (gemini-2.5-flash, text-embedding-004)
 
-- The background of the main chat page automatically cycles through high-res deep-space imagery (nebulae, star clusters, galaxies) every 10 seconds with a long, elegant 2-second cross-fade.
+Backend & Vector Database: Supabase (pgvector extension, PostgreSQL, Row Level Security)
 
-- Apply a dark gradient overlay (black/deep indigo with subtle blur) over the background so text and chat elements remain crisp and legible.
+Authentication: Supabase Auth (Google OAuth)
 
-### 3. Gemini-Style Layout & Structure
 
-- **Left Navigation Drawer:** Collapsible sidebar featuring a "New Chat" button, a list of dummy past chats, and user profile controls at the bottom.
 
-- **Hero State (New Chat):** Central greeting ("Where to next, explorer?") alongside 4 interactive prompt suggestion cards with cosmic hover borders.
+How It Works
+User Query Input: The user submits a prompt with the Knowledge Base Search toggle enabled.
 
-- **Chat Feed:** User messages right-aligned, Nebula AI responses left-aligned with a glowing starlight icon.
+Embedding Generation: The system converts the prompt into a 768-dimensional vector using text-embedding-004.
 
-- **Floating Input Bar:** Bottom-anchored rounded input container with attachment, voice, and send action buttons.
+Vector Similarity Matching: Supabase performs a Cosine Distance similarity match against stored document chunks.
 
-### 4. Interactive UI Mock Logic
+Context Injection: Relevant chunks are retrieved and injected directly into the Gemini prompt context.
 
-- Simulate message sending: when a user sends a message, trigger a brief "Nebula is thinking..." starlight loading animation before rendering a mock AI response.
+Grounded Generation: Gemini generates a accurate response accompanied by clickable source attribution tags.
 
-- Keep all state localized in a React hook (`useChatStore.ts`) so an API connection can be plugged in seamlessly later.
+Getting Started
+Clone Repository: Download or clone the project repository to your local machine.
 
-This project was built with [Lovable](https://lovable.dev).
+Install Dependencies: Run the project package installer via Node Package Manager.
 
-## Build with Lovable
+Database Configuration: Enable the vector extension and create the required document chunks table and similarity function inside your Supabase project.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/fc61f6d6-7327-49df-a0b2-fe6e87a5f255).
+Environment Setup: Add your Gemini API key, Supabase URL, and Supabase Anon Key to your environment configuration.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+Run Local Server: Start the development server and open localhost in your browser.
