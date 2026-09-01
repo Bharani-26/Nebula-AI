@@ -14,6 +14,7 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
   const [textContent, setTextContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [isParsingPdf, setIsParsingPdf] = useState(false);
+  const [progressText, setProgressText] = useState("");
   const [successCount, setSuccessCount] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -86,9 +87,12 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
     }
 
     setLoading(true);
+    setProgressText("Preparing document chunks...");
 
     try {
-      const inserted = await ingestDocument(docName, docText);
+      const inserted = await ingestDocument(docName, docText, (current, total) => {
+        setProgressText(`Embedding chunk ${current} of ${total}...`);
+      });
       setSuccessCount(inserted?.length ?? 0);
       setTextContent("");
       setFileName("");
@@ -97,6 +101,7 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
       setErrorMsg(msg);
     } finally {
       setLoading(false);
+      setProgressText("");
     }
   };
 
@@ -230,7 +235,7 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
                   {loading ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Embedding Chunks…
+                      {progressText || "Embedding Chunks…"}
                     </>
                   ) : isParsingPdf ? (
                     <>
