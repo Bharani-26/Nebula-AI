@@ -24,10 +24,11 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
   }, []);
 
   return (
-    <div id="model-selector" className="relative">
+    <div id="model-selector" className="relative shrink-0 self-center">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary sm:text-sm"
+        className="flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent px-2 py-1 text-xs font-medium text-neutral-300 shadow-none transition-colors hover:bg-white/5 hover:text-white"
       >
         <span>{selectedModel.name}</span>
         <svg
@@ -42,28 +43,32 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
       <AnimatePresence>
         {open && (
           <motion.ul
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            className="absolute bottom-full left-0 mb-2 w-64 space-y-1 rounded-lg border border-primary/40 bg-cosmos/95 py-2 shadow-xl backdrop-blur"
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full right-0 mb-2 z-50 w-64 space-y-1 rounded-2xl border border-neutral-700/50 bg-[#181124]/95 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-white/10"
           >
             {MODELS.map((model) => (
               <li key={model.id}>
                 <button
+                  type="button"
                   onClick={() => {
                     onSelectModel(model);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/20 ${
-                    model.id === selectedModel.id ? "bg-primary/10 font-medium" : ""
+                  className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2 text-left text-xs transition-colors ${
+                    model.id === selectedModel.id
+                      ? "bg-purple-500/20 font-medium text-white"
+                      : "text-neutral-300 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <span>{model.name}</span>
                   <span
-                    className={`ml-2 rounded px-1.5 py-0.5 text-xs font-medium ${
+                    className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
                       model.provider === "gemini"
-                        ? "bg-blue-500/20 text-blue-400"
-                        : "bg-green-500/20 text-green-400"
+                        ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                        : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                     }`}
                   >
                     {model.provider === "gemini" ? "Google" : "OpenRouter"}
@@ -77,3 +82,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
     </div>
   );
 }
+
+
+
+

@@ -13,6 +13,7 @@ export interface ChatMessage {
   role: ChatRole;
   content: string;
   createdAt: number;
+  sources?: string[];
 }
 
 export interface ChatThread {
@@ -37,7 +38,7 @@ export function useChatStore() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelConfig>(MODELS[0]);
+  const [selectedModel, setSelectedModel] = useState<ModelConfig>(MODELS[0] as ModelConfig);
   const [user, setUser] = useState<User | null>(null);
 
   const messagesRef = useRef(messages);
@@ -70,7 +71,7 @@ export function useChatStore() {
   }, []);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, ragEnabled = false) => {
       const content = text.trim();
       if (!content) return;
 
@@ -81,6 +82,21 @@ export function useChatStore() {
 
       setMessages((prev) => [...prev, userMessage]);
       setIsThinking(true);
+
+      // Perform Knowledge Base RAG Search if enabled
+      let retrievedContext = "";
+      let retrievedSources: string[] = [];
+
+      if (ragEnabled) {
+        try {
+          const { searchKnowledgeBase } = await import("@/lib/ragSearch");
+          const searchResult = await searchKnowledgeBase(content, 0.5, 3);
+          retrievedContext = searchResult.formattedContext;
+          retrievedSources = searchResult.sources;
+        } catch (ragError) {
+          console.warn("[useChatStore] RAG search error:", ragError);
+        }
+      }
 
       // Create a new thread if none active
       setThreads((prev) => {
@@ -103,10 +119,16 @@ export function useChatStore() {
         setMessages((prev) => {
           const hasAssistantMessage = prev.some((message) => message.id === assistantId);
           if (!hasAssistantMessage) {
-            return [
-              ...prev,
-              { id: assistantId, role: "assistant", content: chunk, createdAt: Date.now() },
-            ];
+            const assistantMsg: ChatMessage = {
+              id: assistantId,
+              role: "assistant",
+              content: chunk,
+              createdAt: Date.now(),
+            };
+            if (retrievedSources.length > 0) {
+              assistantMsg.sources = retrievedSources;
+            }
+            return [...prev, assistantMsg];
           }
 
           return prev.map((message) =>
@@ -118,20 +140,29 @@ export function useChatStore() {
       try {
         if (selectedModel.provider === "gemini") {
           const { streamGeminiChat } = await import("@/lib/gemini");
-          await streamGeminiChat(selectedModel.id, history, content, (chunk) => {
-            setIsThinking(false);
-            appendAssistantText(chunk);
-          });
+          await streamGeminiChat(
+            selectedModel.id,
+            history,
+            content,
+            (chunk) => {
+              setIsThinking(false);
+              appendAssistantText(chunk);
+            },
+            retrievedContext || undefined,
+          );
         } else if (selectedModel.provider === "openrouter") {
-          const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+          const apiKey = import.meta.env["VITE_OPENROUTER_API_KEY"];
           if (!apiKey) throw new Error("OpenRouter API key missing in VITE_OPENROUTER_API_KEY");
           const [{ SYSTEM_PERSONA }, { streamOpenRouterChat }] = await Promise.all([
             import("@/lib/gemini"),
             import("@/lib/openrouter"),
           ]);
-          // prepend system persona for OpenRouter
+          const basePersona = retrievedContext
+            ? `${SYSTEM_PERSONA}\n\nAnswer using ONLY the provided context below:\n--- CONTEXT ---\n${retrievedContext}\n--- END CONTEXT ---`
+            : SYSTEM_PERSONA;
+
           const extendedHistory = [
-            { role: "assistant" as const, content: SYSTEM_PERSONA },
+            { role: "assistant" as const, content: basePersona },
             ...history,
           ];
           await streamOpenRouterChat(

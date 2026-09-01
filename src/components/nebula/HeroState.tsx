@@ -3,12 +3,10 @@ import type { User } from "@supabase/supabase-js";
 
 interface HeroStateProps {
   onPick: (text: string) => void;
-  user: User | null;
+  user?: User | null;
 }
 
-export function HeroState({ onPick, user }: HeroStateProps) {
-  const displayName = user?.user_metadata?.["full_name"] || user?.email || "explorer";
-
+export function HeroState({ onPick }: HeroStateProps) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-12">
       <motion.h1
@@ -17,7 +15,7 @@ export function HeroState({ onPick, user }: HeroStateProps) {
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         className="text-center text-3xl font-semibold sm:text-5xl"
       >
-        <span className="text-nebula">Hello, {displayName}</span>
+        <span className="text-nebula">Hello, explorer</span>
       </motion.h1>
       <motion.p
         initial={{ opacity: 0 }}
@@ -30,3 +28,4 @@ export function HeroState({ onPick, user }: HeroStateProps) {
     </div>
   );
 }
+

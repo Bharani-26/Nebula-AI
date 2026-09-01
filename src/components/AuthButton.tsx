@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signInWithGoogle, signOut } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import type { User } from "@supabase/supabase-js";
+import { LogOut } from "lucide-react";
 
 interface AuthButtonProps {
   user: User | null;
@@ -10,13 +11,13 @@ interface AuthButtonProps {
 
 export function AuthButton({ user }: AuthButtonProps) {
   const [loading, setLoading] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        setIsProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -56,57 +57,78 @@ export function AuthButton({ user }: AuthButtonProps) {
     );
   }
 
-  const displayName = user.user_metadata?.["full_name"] || user.email || "User";
+  const displayName = user.user_metadata?.["full_name"] || user.email?.split("@")[0] || "Bharani";
   const avatarUrl = user.user_metadata?.["avatar_url"];
   const email = user.email || "";
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="relative z-50">
+      {/* Green/teal circular "B" icon avatar button */}
       <button
-        onClick={() => setDropdownOpen((v) => !v)}
-        className="rounded-full p-0.5 transition-all duration-300 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)] focus:shadow-[0_0_12px_rgba(168,85,247,0.4)] focus:outline-none"
+        onClick={() => setIsProfileOpen(!isProfileOpen)}
+        aria-label="User account menu"
+        className="group relative flex items-center justify-center rounded-full p-0.5 transition-all duration-300 focus:outline-none"
       >
-        <Avatar className="h-9 w-9 ring-2 ring-purple-500/50 ring-offset-2 ring-offset-background">
+        <Avatar className="h-9 w-9 ring-2 ring-teal-500/60 ring-offset-2 ring-offset-background transition-all duration-300 group-hover:ring-teal-400 group-hover:shadow-[0_0_14px_rgba(20,184,166,0.5)]">
           <AvatarImage src={avatarUrl} alt={displayName} />
-          <AvatarFallback className="bg-purple-500/20 text-xs font-medium text-purple-300">
-            {displayName.charAt(0).toUpperCase()}
+          <AvatarFallback className="bg-gradient-to-br from-teal-600 to-emerald-600 font-semibold text-white shadow-inner">
+            {initial}
           </AvatarFallback>
         </Avatar>
       </button>
 
       <AnimatePresence>
-        {dropdownOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-3 w-64 rounded-xl border border-border bg-cosmos/95 p-4 shadow-xl backdrop-blur"
-          >
-            <div className="flex items-center gap-3 border-b border-border pb-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={avatarUrl} alt={displayName} />
-                <AvatarFallback className="bg-purple-500/20 text-sm font-medium text-purple-300">
-                  {displayName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
-                <p className="truncate text-xs text-muted-foreground">{email}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setDropdownOpen(false);
-                signOut();
-              }}
-              className="mt-3 w-full rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
+        {isProfileOpen && (
+          <>
+            {/* Outer backdrop to close modal when clicking outside */}
+            <div
+              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
+              onClick={() => setIsProfileOpen(false)}
+            />
+
+            {/* Profile Dropdown Modal */}
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.95 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-neutral-800 bg-neutral-900/95 p-4 shadow-2xl backdrop-blur-xl ring-1 ring-white/10"
             >
-              Sign Out
-            </button>
-          </motion.div>
+              {/* Header user info */}
+              <div className="flex flex-col items-center border-b border-neutral-800 pb-3 text-center">
+                <Avatar className="h-12 w-12 ring-2 ring-teal-500/50 ring-offset-2 ring-offset-background">
+                  <AvatarImage src={avatarUrl} alt={displayName} />
+                  <AvatarFallback className="bg-gradient-to-br from-teal-600 to-emerald-600 text-lg font-semibold text-white">
+                    {initial}
+                  </AvatarFallback>
+                </Avatar>
+
+                <p className="mt-2.5 w-full truncate text-sm font-semibold text-white">
+                  {displayName}
+                </p>
+                <p className="w-full truncate text-xs text-neutral-400">{email}</p>
+              </div>
+
+              {/* Red Sign Out Button */}
+              <div className="mt-3">
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    signOut();
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/20 hover:text-red-300"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign Out
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
   );
 }
+
+

@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { BookOpen, Sparkles } from "lucide-react";
 
 import { AuthButton } from "@/components/AuthButton";
 import { CosmicBackground } from "./CosmicBackground";
+import { DocumentIngestModal } from "./DocumentIngestModal";
 import { HeroState } from "./HeroState";
 import { InputBar } from "./InputBar";
 import { MessageFeed } from "./MessageFeed";
@@ -12,6 +13,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 
 export function NebulaWorkspace() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [ingestModalOpen, setIngestModalOpen] = useState(false);
   const chat = useChatStore();
 
   return (
@@ -46,6 +48,7 @@ export function NebulaWorkspace() {
           chat.selectThread(id);
           setSidebarOpen(false);
         }}
+        user={chat.user}
       />
 
       <main className="flex min-w-0 flex-1 flex-col">
@@ -62,8 +65,15 @@ export function NebulaWorkspace() {
               Nebula AI
             </h2>
           </div>
-          <div className="flex items-center gap-4">
-            <AuthButton user={chat.user} />
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIngestModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-3 py-1 text-[11px] font-medium tracking-wider text-cyan-300 uppercase transition-all duration-300 hover:bg-cyan-900/60 hover:border-cyan-400/60 hover:shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-cyan-400" />
+              Ingest Doc
+            </button>
             <span className="rounded-full border border-border px-3 py-1 text-[11px] tracking-widest text-accent uppercase">
               Deep field
             </span>
@@ -81,6 +91,12 @@ export function NebulaWorkspace() {
           disabled={chat.isThinking}
           selectedModel={chat.selectedModel}
           onSelectModel={chat.setModel}
+          onOpenIngestModal={() => setIngestModalOpen(true)}
+        />
+
+        <DocumentIngestModal
+          isOpen={ingestModalOpen}
+          onClose={() => setIngestModalOpen(false)}
         />
       </main>
     </motion.div>

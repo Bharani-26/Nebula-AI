@@ -12,8 +12,9 @@ export async function streamGeminiChat(
   history: GeminiMessageInput[],
   userPrompt: string,
   onChunk: (chunkText: string) => void,
+  systemContext?: string,
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env["VITE_GEMINI_API_KEY"];
 
   if (!apiKey || typeof apiKey !== "string" || apiKey.trim() === "") {
     throw new Error(
@@ -35,12 +36,16 @@ export async function streamGeminiChat(
     },
   ];
 
+  const systemInstruction = systemContext
+    ? `${SYSTEM_PERSONA}\n\nAnswer using ONLY the provided context below:\n--- CONTEXT ---\n${systemContext}\n--- END CONTEXT ---`
+    : SYSTEM_PERSONA;
+
   try {
     const response = await ai.models.generateContent({
       model: modelId,
       contents,
       config: {
-        systemInstruction: SYSTEM_PERSONA,
+        systemInstruction,
       },
     });
 
