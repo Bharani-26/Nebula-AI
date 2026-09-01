@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent, type DragEvent } from "react";
 import { ingestDocument } from "@/lib/ragIngestion";
+import { extractTextFromPdf } from "@/lib/pdfExtractor";
 
 interface DocumentIngestModalProps {
   isOpen: boolean;
@@ -12,20 +13,63 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
   const [fileName, setFileName] = useState("");
   const [textContent, setTextContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isParsingPdf, setIsParsingPdf] = useState(false);
   const [successCount, setSuccessCount] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const processFile = async (file: File) => {
+    setFileName(file.name);
+    setErrorMsg(null);
+    setSuccessCount(null);
+
+    const isPdf = file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+
+    if (isPdf) {
+      setIsParsingPdf(true);
+      try {
+        const extractedText = await extractTextFromPdf(file);
+        if (!extractedText.trim()) {
+          setErrorMsg("Could not extract readable text from PDF. It may be image-only or password protected.");
+        } else {
+          setTextContent(extractedText);
+        }
+      } catch (err: unknown) {
+        console.error("[DocumentIngestModal] PDF extraction error:", err);
+        const msg = err instanceof Error ? err.message : "Failed to parse PDF text.";
+        setErrorMsg(`PDF Parsing Error: ${msg}`);
+      } finally {
+        setIsParsingPdf(false);
+      }
+    } else {
+      try {
+        const text = await file.text();
+        setTextContent(text);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Failed to read file.";
+        setErrorMsg(`File Read Error: ${msg}`);
+      }
+    }
+  };
+
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      processFile(file);
+    }
+  };
 
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setTextContent(content ?? "");
-    };
-    reader.readAsText(file);
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleIngest = async (e: FormEvent) => {
@@ -115,31 +159,45 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                   Upload File or Paste Content
                 </label>
-                <div className="flex items-center gap-3 mb-2">
-                  <label className="inline-flex items-center gap-2 cursor-pointer rounded-xl bg-secondary px-3.5 py-2 text-xs font-medium transition-colors hover:bg-secondary/80">
-                    <Upload className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Choose File (.txt, .md, .json)</span>
-                    <input
-                      type="file"
-                      accept=".txt,.md,.json,.csv,.pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                  {fileName && (
-                    <span className="flex items-center gap-1 text-xs text-cyan-400 truncate max-w-[200px]">
-                      <FileText className="h-3.5 w-3.5 shrink-0" />
-                      {fileName}
-                    </span>
-                  )}
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  className="rounded-xl border border-dashed border-white/15 bg-zinc-900/50 p-3 transition-colors hover:border-cyan-500/40 mb-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <label className="inline-flex items-center gap-2 cursor-pointer rounded-xl bg-secondary px-3.5 py-2 text-xs font-medium transition-colors hover:bg-secondary/80">
+                      <Upload className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Choose File (.pdf, .txt, .md, .json)</span>
+                      <input
+                        type="file"
+                        accept=".pdf,.txt,.md,.json,.csv"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {fileName && (
+                      <span className="flex items-center gap-1 text-xs text-cyan-400 truncate max-w-[200px]">
+                        <FileText className="h-3.5 w-3.5 shrink-0" />
+                        {fileName}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <textarea
-                  rows={5}
-                  value={textContent}
-                  onChange={(e) => setTextContent(e.target.value)}
-                  placeholder="Paste document text here to chunk (~500 chars, 50 overlap) and embed..."
-                  className="w-full rounded-xl bg-zinc-900 border border-white/10 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none font-mono"
-                />
+
+                {isParsingPdf ? (
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 p-6 text-xs text-cyan-300 animate-pulse">
+                    <Loader2 className="h-4 w-4 text-cyan-400 animate-spin shrink-0" />
+                    Parsing PDF text... extracting pages via pdfjs-dist.
+                  </div>
+                ) : (
+                  <textarea
+                    rows={5}
+                    value={textContent}
+                    onChange={(e) => setTextContent(e.target.value)}
+                    placeholder="Paste document text or drop a file to extract clean text and embed..."
+                    className="w-full rounded-xl bg-zinc-900 border border-white/10 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none font-mono"
+                  />
+                )}
               </div>
 
               {errorMsg && (
@@ -165,7 +223,7 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || (!fileName && !textContent)}
+                  disabled={loading || isParsingPdf || (!fileName && !textContent)}
                   className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50 transition-all"
                   style={{ background: "var(--gradient-nebula)" }}
                 >
@@ -173,6 +231,11 @@ export function DocumentIngestModal({ isOpen, onClose }: DocumentIngestModalProp
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Embedding Chunks…
+                    </>
+                  ) : isParsingPdf ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Parsing PDF…
                     </>
                   ) : (
                     <>
