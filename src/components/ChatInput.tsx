@@ -55,7 +55,7 @@ export function ChatInput({
     <div className="px-3 pb-4 sm:px-4 sm:pb-6">
       <form
         onSubmit={submit}
-        className={`glass-panel mx-auto flex w-full max-w-3xl items-center gap-2 rounded-[28px] p-2.5 overflow-hidden transition-all duration-300 ${
+        className={`glass-panel mx-auto flex w-full max-w-3xl items-center gap-2 rounded-[28px] p-2.5 overflow-visible transition-all duration-300 ${
           ragEnabled
             ? "ring-2 ring-cyan-500/60 shadow-[0_0_25px_rgba(6,182,212,0.25)]"
             : "focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.15)]"
@@ -103,9 +103,7 @@ export function ChatInput({
           onClick={() => setRagEnabled((prev) => !prev)}
           aria-label="Toggle Knowledge Base Search"
           title={
-            ragEnabled
-              ? "Knowledge Base Search: ON (RAG Active)"
-              : "Knowledge Base Search: OFF"
+            ragEnabled ? "Knowledge Base Search: ON (RAG Active)" : "Knowledge Base Search: OFF"
           }
           className={`relative flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all duration-300 ${
             ragEnabled
@@ -122,7 +120,9 @@ export function ChatInput({
 
         {/* Model Selector Pill */}
         {selectedModel && onSelectModel && (
-          <ModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+          <div className="relative shrink-0">
+            <ModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+          </div>
         )}
 
         {/* Voice Input */}
@@ -150,7 +150,8 @@ export function ChatInput({
         {ragEnabled ? (
           <span className="flex items-center gap-1.5 text-cyan-400/90 font-medium">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            Knowledge Base Search is active — responses will be augmented with retrieved document context.
+            Knowledge Base Search is active — responses will be augmented with retrieved document
+            context.
           </span>
         ) : (
           <span>Nebula AI is ready — click the Book icon to enable Knowledge Base RAG search.</span>

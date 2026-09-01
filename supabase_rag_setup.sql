@@ -18,17 +18,25 @@ with (lists = 100);
 -- Enable RLS (Row Level Security)
 alter table document_chunks enable row level security;
 
+-- RLS policies do not replace the table-level privileges required by the API roles.
+grant select, insert, update, delete on table document_chunks to anon, authenticated;
+
 -- Drop existing policies if any exist to allow clean re-execution
 drop policy if exists "Allow read access to all users" on document_chunks;
 drop policy if exists "Allow insert access to all users" on document_chunks;
 drop policy if exists "Allow update access to all users" on document_chunks;
 drop policy if exists "Allow delete access to all users" on document_chunks;
 
--- Policies allowing public (anon & authenticated) full access to document_chunks
-create policy "Allow read access to all users" on document_chunks for select to public using (true);
-create policy "Allow insert access to all users" on document_chunks for insert to public with check (true);
-create policy "Allow update access to all users" on document_chunks for update to public using (true);
-create policy "Allow delete access to all users" on document_chunks for delete to public using (true);
+-- Policies allowing both unauthenticated and authenticated clients to use document_chunks.
+-- Keep these roles explicit because the ingestion UI can be used before sign-in.
+create policy "Allow read access to all users" on document_chunks
+  for select to anon, authenticated using (true);
+create policy "Allow insert access to all users" on document_chunks
+  for insert to anon, authenticated with check (true);
+create policy "Allow update access to all users" on document_chunks
+  for update to anon, authenticated using (true) with check (true);
+create policy "Allow delete access to all users" on document_chunks
+  for delete to anon, authenticated using (true);
 
 -- RPC Function for similarity matching
 create or replace function match_document_chunks (

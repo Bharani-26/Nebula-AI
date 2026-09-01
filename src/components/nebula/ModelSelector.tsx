@@ -10,13 +10,13 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorProps) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest("#model-selector")) {
-        setOpen(false);
+        setIsOpen(false);
       }
     };
     document.addEventListener("click", handleClick);
@@ -27,12 +27,12 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
     <div id="model-selector" className="relative shrink-0 self-center">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setIsOpen((v) => !v)}
         className="flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent px-2 py-1 text-xs font-medium text-neutral-300 shadow-none transition-colors hover:bg-white/5 hover:text-white"
       >
         <span>{selectedModel.name}</span>
         <svg
-          className={`h-3.5 w-3.5 transform transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transform transition-transform ${isOpen ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="currentColor"
         >
@@ -41,13 +41,13 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
       </button>
 
       <AnimatePresence>
-        {open && (
+        {isOpen && (
           <motion.ul
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full right-0 mb-2 z-50 w-64 space-y-1 rounded-2xl border border-neutral-700/50 bg-[#181124]/95 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-white/10"
+            className="absolute bottom-full mb-3 right-0 z-50 min-w-[200px] bg-[#181124] border border-neutral-700/80 rounded-2xl shadow-2xl p-1.5 overflow-hidden"
           >
             {MODELS.map((model) => (
               <li key={model.id}>
@@ -55,7 +55,7 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
                   type="button"
                   onClick={() => {
                     onSelectModel(model);
-                    setOpen(false);
+                    setIsOpen(false);
                   }}
                   className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2 text-left text-xs transition-colors ${
                     model.id === selectedModel.id
@@ -82,7 +82,3 @@ export function ModelSelector({ selectedModel, onSelectModel }: ModelSelectorPro
     </div>
   );
 }
-
-
-
-
