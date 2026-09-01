@@ -15,13 +15,20 @@ create index if not exists document_chunks_embedding_idx
 on document_chunks using ivfflat (embedding vector_cosine_ops)
 with (lists = 100);
 
--- Enable RLS (Row Level Security) - optional based on your policies
+-- Enable RLS (Row Level Security)
 alter table document_chunks enable row level security;
 
--- Policy to allow read/write access for authenticated and anon users (adjust as needed)
-create policy "Allow read access to all users" on document_chunks for select using (true);
-create policy "Allow insert access to all users" on document_chunks for insert with check (true);
-create policy "Allow delete access to all users" on document_chunks for delete using (true);
+-- Drop existing policies if any exist to allow clean re-execution
+drop policy if exists "Allow read access to all users" on document_chunks;
+drop policy if exists "Allow insert access to all users" on document_chunks;
+drop policy if exists "Allow update access to all users" on document_chunks;
+drop policy if exists "Allow delete access to all users" on document_chunks;
+
+-- Policies allowing public (anon & authenticated) full access to document_chunks
+create policy "Allow read access to all users" on document_chunks for select to public using (true);
+create policy "Allow insert access to all users" on document_chunks for insert to public with check (true);
+create policy "Allow update access to all users" on document_chunks for update to public using (true);
+create policy "Allow delete access to all users" on document_chunks for delete to public using (true);
 
 -- RPC Function for similarity matching
 create or replace function match_document_chunks (
