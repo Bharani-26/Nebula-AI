@@ -35,13 +35,16 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.embedContent({
-    model: "text-embedding-004",
+    model: "gemini-embedding-001",
     contents: text,
+    config: {
+      outputDimensionality: 768,
+    },
   });
 
   const values = response.embeddings?.[0]?.values;
   if (!values || !Array.isArray(values) || values.length === 0) {
-    throw new Error("Failed to generate vector embedding from Gemini text-embedding-004.");
+    throw new Error("Failed to generate vector embedding from Gemini embedding model.");
   }
 
   return values;
